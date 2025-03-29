@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload } from 'lucide-react';
 import Link from 'next/link';
+import { use } from 'react';
 
 interface Project {
   id: string;
@@ -12,43 +13,59 @@ interface Project {
   images: string[];
 }
 
-export default function ProjectPage({ params }: { params: { id: string } }) {
-  const [project, setProject] = useState<Project>({
-    id: params.id,
-    name: 'Project ' + params.id,
-    createdAt: new Date(),
-    images: []
-  });
+export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('projects');
     if (savedProjects) {
       const projects = JSON.parse(savedProjects);
-      const existingProject = projects.find((p: Project) => p.id === params.id);
+      const existingProject = projects.find((p: Project) => p.id === resolvedParams.id);
       if (existingProject) {
         setProject(existingProject);
+      } else {
+        setProject({
+          id: resolvedParams.id,
+          name: 'Project ' + resolvedParams.id,
+          createdAt: new Date(),
+          images: []
+        });
       }
+    } else {
+      setProject({
+        id: resolvedParams.id,
+        name: 'Project ' + resolvedParams.id,
+        createdAt: new Date(),
+        images: []
+      });
     }
-  }, [params.id]);
+    setIsLoading(false);
+  }, [resolvedParams.id]);
 
   const updateProject = (updates: Partial<Project>) => {
+    if (!project) return;
+    
     const updatedProject = { ...project, ...updates };
     setProject(updatedProject);
 
     const savedProjects = localStorage.getItem('projects');
     const projects = savedProjects ? JSON.parse(savedProjects) : [];
     const updatedProjects = projects.map((p: Project) => 
-      p.id === params.id ? updatedProject : p
+      p.id === resolvedParams.id ? updatedProject : p
     );
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
   };
 
   const onDrop = (acceptedFiles: File[]) => {
+    if (!project) return;
+    
     acceptedFiles.forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = () => {
-          const newImages = [...project.images, reader.result as string];
+          const newImages = [...(project.images || []), reader.result as string];
           updateProject({ images: newImages });
         };
         reader.readAsDataURL(file);
@@ -57,6 +74,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   };
 
   const removeImage = (index: number) => {
+    if (!project) return;
+    
     const newImages = [...project.images];
     newImages.splice(index, 1);
     updateProject({ images: newImages });
@@ -69,6 +88,22 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       'application/zip': ['.zip']
     }
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-cover bg-center relative flex items-center justify-center" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+        <div className="text-white text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-cover bg-center relative flex items-center justify-center" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+        <div className="text-white text-2xl">Project not found</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
@@ -104,17 +139,17 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-amber-300/70 bg-amber-100/80' : 'border-amber-200/60 bg-amber-50/80'
+            className={`h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors ${
+              isDragActive ? 'border-white/70 bg-white/5' : 'border-white/60 bg-transparent'
             }`}
           >
-            <Upload className="mx-auto h-12 w-12 text-slate-800" />
-            <p className="mt-4 text-lg font-medium text-slate-800">
-              Drag and drop images or ZIP files here, or click to select files
+            <Upload className="h-8 w-8 text-white/80" />
+            <p className="mt-2 text-base font-medium text-white/80">
+              Drop images here
             </p>
           </div>
 
-          {project.images.length > 0 && (
+          {project.images && project.images.length > 0 && (
             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {project.images.map((image, index) => (
                 <div key={index} className="relative group">
