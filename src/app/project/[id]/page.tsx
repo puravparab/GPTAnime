@@ -20,6 +20,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const directoryInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('projects');
@@ -301,6 +302,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   return (
     <>
       <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/assets/video/background.mp4" type="video/mp4" />
+        </video>
         <div className="relative z-[1]">
           <div className="text-center text-white p-8">
             <Link href="/" className="inline-block">

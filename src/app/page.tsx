@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Trash2 } from 'lucide-react';
 
@@ -15,8 +15,8 @@ export default function Home() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // In a real app, this would fetch from an API/database
   useEffect(() => {
     const savedProjects = localStorage.getItem('projects');
     if (savedProjects) {
@@ -53,6 +53,16 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/assets/video/background.mp4" type="video/mp4" />
+        </video>
         <div className="text-center text-white p-8 relative z-10 pt-32">
           <h1 className="text-7xl font-extrabold mb-8 tracking-tight drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-50 to-white">
             GPT Anime
@@ -67,6 +77,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+      >
+        <source src="/assets/video/background.mp4" type="video/mp4" />
+      </video>
       <div className="text-center text-white p-8 relative z-10 pt-32">
         <h1 className="text-7xl font-extrabold mb-8 tracking-tight drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-50 to-white">
           GPT Anime
