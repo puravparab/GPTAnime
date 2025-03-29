@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GPT Imagen",
-  description: "Use the new GPT40 Image generation to bulk edit images",
+  title: "GPT Anime",
+  description: "Your photos reimagined in your favorite anime using GPT 4o",
 };
 
 export default function RootLayout({
