@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
-import JSZip from 'jszip';
+import { resizeImage, processZipFile } from '@/utils/imageUpload';
 
 interface Project {
   id: string;
@@ -63,158 +63,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
   };
 
-  const resizeImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800; // Maximum width for the resized image
-          const MAX_HEIGHT = 800; // Maximum height for the resized image
-          
-          let width = img.width;
-          let height = img.height;
-          
-          // Calculate new dimensions while maintaining aspect ratio
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width = Math.round((width * MAX_HEIGHT) / height);
-              height = MAX_HEIGHT;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Could not get canvas context'));
-            return;
-          }
-          
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.8)); // 0.8 quality for good compression
-        };
-        img.onerror = reject;
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const processZipFile = async (file: File) => {
-    if (!project) return;
-    
-    try {
-      const zip = new JSZip();
-      const contents = await zip.loadAsync(file);
-      
-      // Array to store all processed images
-      const processedImages: string[] = [];
-      
-      // Process all files in the zip
-      for (const [filename, zipEntry] of Object.entries(contents.files)) {
-        // Skip directories, non-image files, and macOS system files
-        if (zipEntry.dir || 
-            !filename.match(/\.(png|jpeg|jpg|webp)$/i) || 
-            filename.startsWith('__MACOSX') || 
-            filename.startsWith('._')) continue;
-        
-        try {
-          // Get the file data as blob
-          const blob = await zipEntry.async('blob');
-          
-          // Skip files that are too small to be valid images
-          if (blob.size < 1000) {
-            console.log('Skipping file too small to be a valid image:', filename, 'Size:', blob.size);
-            continue;
-          }
-          
-          const imageFile = new File([blob], filename, { type: `image/${filename.split('.').pop()}` });
-          
-          console.log('Processing image from zip:', filename, 'Size:', blob.size);
-          
-          // Create a URL for the blob
-          const blobUrl = URL.createObjectURL(blob);
-          
-          // Create a new Image object and load it
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          
-          // Wait for the image to load
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = (e) => {
-              URL.revokeObjectURL(blobUrl);
-              reject(new Error(`Failed to load image: ${filename}`));
-            };
-            img.src = blobUrl;
-          });
-          
-          // Create canvas and resize
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-          
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width = Math.round((width * MAX_HEIGHT) / height);
-              height = MAX_HEIGHT;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            throw new Error('Could not get canvas context');
-          }
-          
-          ctx.drawImage(img, 0, 0, width, height);
-          const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
-          
-          // Clean up
-          URL.revokeObjectURL(blobUrl);
-          
-          // Add to processed images array
-          processedImages.push(resizedImage);
-        } catch (error) {
-          console.error('Error processing image from zip:', filename, 'Error details:', error);
-          if (error instanceof Error) {
-            console.error('Error stack:', error.stack);
-          }
-        }
-      }
-      
-      // Update project with all processed images at once
-      if (processedImages.length > 0) {
-        const newImages = [...(project.images || []), ...processedImages];
-        updateProject({ images: newImages });
-      }
-    } catch (error) {
-      console.error('Error processing zip file:', error);
-      if (error instanceof Error) {
-        console.error('Error stack:', error.stack);
-      }
-    }
-  };
-
   const onDrop = async (acceptedFiles: File[]) => {
     if (!project) return;
     
@@ -228,7 +76,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           console.error('Error processing image:', error);
         }
       } else if (file.type === 'application/zip') {
-        await processZipFile(file);
+        const processedImages = await processZipFile(file);
+        if (processedImages.length > 0) {
+          const newImages = [...(project.images || []), ...processedImages];
+          updateProject({ images: newImages });
+        }
       }
     }
   };
@@ -250,46 +102,60 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       /\.(png|jpeg|jpg|webp)$/i.test(file.name)
     );
     
-    if (imageFiles.length > 0) {
-      const processedImages: string[] = [];
-      
-      for (const file of imageFiles) {
-        try {
-          const resizedImage = await resizeImage(file);
-          processedImages.push(resizedImage);
-        } catch (error) {
-          console.error('Error processing image:', error);
-        }
-      }
-      
-      if (processedImages.length > 0) {
-        const newImages = [...(project?.images || []), ...processedImages];
+    for (const file of imageFiles) {
+      try {
+        const resizedImage = await resizeImage(file);
+        if (!project) return;
+        const newImages = [...(project.images || []), resizedImage];
         updateProject({ images: newImages });
+      } catch (error) {
+        console.error('Error processing image:', error);
       }
     }
   };
 
-  const handleUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setImageUrl(url);
+  };
 
-    // Check if the input is a URL
+  const handleUrlPaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedUrl = e.clipboardData.getData('text');
+    setImageUrl(pastedUrl);
+    
     try {
-      const urlObj = new URL(url);
-      if (urlObj.protocol.startsWith('http')) {
-        const response = await fetch(urlObj.toString());
-        const blob = await response.blob();
-        const file = new File([blob], 'image.jpg', { type: blob.type });
-        
-        if (file.type.startsWith('image/')) {
-          const resizedImage = await resizeImage(file);
-          const newImages = [...(project?.images || []), resizedImage];
-          updateProject({ images: newImages });
-          setImageUrl(''); // Clear the input after successful addition
-        }
+      // Validate URL first
+      const urlObj = new URL(pastedUrl);
+      if (!urlObj.protocol.startsWith('http')) {
+        throw new Error('Not a valid HTTP URL');
       }
+
+      console.log('Fetching image from URL:', pastedUrl);
+      const response = await fetch(pastedUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
+      console.log('Fetched blob type:', blob.type);
+      
+      // Verify it's an image
+      if (!blob.type.startsWith('image/')) {
+        throw new Error('Not a valid image file');
+      }
+      
+      const file = new File([blob], 'image.jpg', { type: blob.type });
+      console.log('Processing image file:', file.name, file.type);
+      
+      const resizedImage = await resizeImage(file);
+      if (!project) return;
+      const newImages = [...(project.images || []), resizedImage];
+      updateProject({ images: newImages });
+      setImageUrl('');
     } catch (error) {
-      // Not a valid URL, ignore
+      console.error('Error processing image URL:', error);
+      alert('Failed to process image URL. Please check the console for details.');
     }
   };
 
@@ -358,13 +224,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60"
               />
               <div className="flex gap-4">
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={handleUrlChange}
-                  placeholder="Paste image URL"
-                  className="px-4 py-2 rounded-full bg-white/30 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-200/60"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={handleUrlChange}
+                    onPaste={handleUrlPaste}
+                    placeholder="Paste image URL"
+                    className="px-4 py-2 rounded-full bg-white/30 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-200/60"
+                  />
+                </div>
                 <button
                   {...getRootProps()}
                   className="inline-flex items-center px-6 py-3 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
