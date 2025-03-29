@@ -19,6 +19,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
   const directoryInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -268,6 +269,30 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   };
 
+  const handleUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setImageUrl(url);
+
+    // Check if the input is a URL
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.protocol.startsWith('http')) {
+        const response = await fetch(urlObj.toString());
+        const blob = await response.blob();
+        const file = new File([blob], 'image.jpg', { type: blob.type });
+        
+        if (file.type.startsWith('image/')) {
+          const resizedImage = await resizeImage(file);
+          const newImages = [...(project?.images || []), resizedImage];
+          updateProject({ images: newImages });
+          setImageUrl(''); // Clear the input after successful addition
+        }
+      }
+    } catch (error) {
+      // Not a valid URL, ignore
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -332,14 +357,23 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 onChange={(e) => updateProject({ name: e.target.value })}
                 className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60"
               />
-              <button
-                {...getRootProps()}
-                className="inline-flex items-center px-6 py-3 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
-              >
-                <Upload size={20} className="mr-2" />
-                Add Images
-                <input {...getInputProps()} />
-              </button>
+              <div className="flex gap-4">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={handleUrlChange}
+                  placeholder="Paste image URL"
+                  className="px-4 py-2 rounded-full bg-white/30 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-200/60"
+                />
+                <button
+                  {...getRootProps()}
+                  className="inline-flex items-center px-6 py-3 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
+                >
+                  <Upload size={20} className="mr-2" />
+                  Add Images
+                  <input {...getInputProps()} />
+                </button>
+              </div>
             </div>
 
             {(!project.images || project.images.length === 0) && (
