@@ -19,7 +19,7 @@ export default function Header() {
           </div>
           <div className="flex items-center">
             <Link
-              href="https://github.com/yourusername/gpt-anime"
+              href="https://github.com/puravparab/GPTAnime"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View GPT Anime on GitHub"
