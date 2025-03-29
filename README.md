@@ -1,6 +1,6 @@
 ## GPT-Anime
 
-Your photos reimagined in your favorite anime using powerful GPT-4o image model
+Your photos reimagined in your favorite anime! Ghiblify your images or bulk create/edit images using the new GPT4o image model
 
 ## Installation
 
@@ -14,7 +14,12 @@ Your photos reimagined in your favorite anime using powerful GPT-4o image model
 	cd GPTAnime/src
 	```
 
-3. Run server
+3. Install dependencies
+	```
+	bun install
+	```
+
+4. Run server
 	```
 	bun run dev
 	```
