@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import { resizeImage, processZipFile } from '@/utils/imageUpload';
@@ -12,6 +12,8 @@ interface Project {
   name: string;
   createdAt: Date;
   images: string[];
+  prompt?: string;
+  style?: string;
 }
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +22,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [prompt, setPrompt] = useState('');
   const directoryInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -210,9 +213,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 GPT Anime
               </h1>
             </Link>
-            <p className="text-3xl font-medium tracking-wide drop-shadow-lg max-w-3xl mx-auto leading-relaxed text-white mb-12">
-              Your photos reimagined in your favorite anime
-            </p>
           </div>
 
           <div className="max-w-7xl mx-auto px-8">
@@ -241,6 +241,76 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   <Upload size={20} className="mr-2" />
                   Add Images
                   <input {...getInputProps()} />
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-8 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="flex items-center gap-4 mb-6">
+                <input
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Enter your prompt..."
+                  className="flex-1 px-4 py-3 rounded-full text-white/90 placeholder-white/40 focus:outline-none border-none"
+                />
+                <button
+                  className="inline-flex items-center justify-center w-12 h-12 rounded-lg text-white bg-orange-500 hover:bg-orange-600 transition-all duration-200 ease-in-out cursor-pointer"
+                >
+                  <ArrowRight size={24} />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <span className="text-white/60 text-sm font-medium">Style:</span>
+                <button
+                  onClick={() => updateProject({ style: 'Studio Ghibli' })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    project.style === 'Studio Ghibli'
+                      ? 'bg-amber-50/80 text-slate-900 border-amber-200/60'
+                      : 'bg-white/20 border border-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Studio Ghibli
+                </button>
+                <button
+                  onClick={() => updateProject({ style: 'Batman TAS' })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    project.style === 'Batman TAS'
+                      ? 'bg-amber-50/80 text-slate-900 border-amber-200/60'
+                      : 'bg-white/20 border border-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Batman TAS
+                </button>
+                <button
+                  onClick={() => updateProject({ style: 'Sailor Moon' })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    project.style === 'Sailor Moon'
+                      ? 'bg-amber-50/80 text-slate-900 border-amber-200/60'
+                      : 'bg-white/20 border border-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Sailor Moon
+                </button>
+                <button
+                  onClick={() => updateProject({ style: 'Dragon Ball' })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    project.style === 'Dragon Ball'
+                      ? 'bg-amber-50/80 text-slate-900 border-amber-200/60'
+                      : 'bg-white/20 border border-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Dragon Ball
+                </button>
+                <button
+                  onClick={() => updateProject({ style: 'Attack on Titan' })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                    project.style === 'Attack on Titan'
+                      ? 'bg-amber-50/80 text-slate-900 border-amber-200/60'
+                      : 'bg-white/20 border border-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Attack on Titan
                 </button>
               </div>
             </div>
@@ -302,4 +372,4 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       )}
     </>
   );
-} 
+}
