@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Trash2 } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -25,9 +26,15 @@ export default function Home() {
   }, []);
 
   const createNewProject = () => {
+    // Find the highest existing ID
+    const maxId = projects.reduce((max, project) => {
+      const currentId = parseInt(project.id);
+      return currentId > max ? currentId : max;
+    }, 0);
+
     const newProject = {
-      id: (projects.length + 1).toString(),
-      name: `Project ${projects.length + 1}`,
+      id: (maxId + 1).toString(),
+      name: `Project ${maxId + 1}`,
       createdAt: new Date()
     };
     
@@ -35,6 +42,12 @@ export default function Home() {
     setProjects(updatedProjects);
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
     router.push(`/project/${newProject.id}`);
+  };
+
+  const deleteProject = (projectId: string) => {
+    const updatedProjects = projects.filter(p => p.id !== projectId);
+    setProjects(updatedProjects);
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
   };
 
   if (isLoading) {
@@ -84,19 +97,26 @@ export default function Home() {
             {projects
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((project) => (
-              <Link 
-                key={project.id} 
-                href={`/project/${project.id}`}
-                className="group bg-white/60 hover:bg-white/40 border border-white/60 rounded-xl p-6 transition-all duration-200 cursor-pointer"
-              >
-                <h3 className="text-2xl font-extrabold text-sky-800 mb-2">{project.name}</h3>
-                <p className="text-sm font-medium text-slate-700">
-                  Created {new Date(project.createdAt).toLocaleString(undefined, { 
-                    dateStyle: 'short',
-                    timeStyle: 'short'
-                  })}
-                </p>
-              </Link>
+              <div key={project.id} className="relative group bg-white/60 hover:bg-white/40 border border-white/60 rounded-xl transition-all duration-200">
+                <Link 
+                  href={`/project/${project.id}`}
+                  className="block p-6"
+                >
+                  <h3 className="text-2xl font-extrabold text-sky-800 mb-2">{project.name}</h3>
+                  <p className="text-sm font-medium text-slate-700">
+                    Created {new Date(project.createdAt).toLocaleString(undefined, { 
+                      dateStyle: 'short',
+                      timeStyle: 'short'
+                    })}
+                  </p>
+                </Link>
+                <button
+                  onClick={() => deleteProject(project.id)}
+                  className="absolute top-2 right-2 text-red-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             ))}
           </div>
         )}
