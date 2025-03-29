@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface PromptSectionProps {
   prompt: string;
@@ -8,6 +9,42 @@ interface PromptSectionProps {
 }
 
 export default function PromptSection({ prompt, setPrompt, style, updateProject }: PromptSectionProps) {
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [currentText, setCurrentText] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+  const placeholders = [
+    'Enter your prompt...',
+    'Change the style of these images to Studio Ghibli...',
+    'Create an image of an astronaut on a horse in the style of Studio Ghibli'
+  ];
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+    
+    if (isTyping) {
+      if (currentText.length < placeholders[placeholderIndex].length) {
+        timeout = setTimeout(() => {
+          setCurrentText(placeholders[placeholderIndex].slice(0, currentText.length + 1));
+        }, 50);
+      } else {
+        timeout = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000);
+      }
+    } else {
+      if (currentText.length > 0) {
+        timeout = setTimeout(() => {
+          setCurrentText(currentText.slice(0, -1));
+        }, 30);
+      } else {
+        setIsTyping(true);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [currentText, isTyping, placeholderIndex]);
+
   return (
     <div className="mb-8 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
       <div className="flex items-center gap-4 mb-6">
@@ -15,7 +52,7 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject 
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Enter your prompt..."
+          placeholder={currentText}
           className="flex-1 px-4 py-3 rounded-full text-white/90 placeholder-white/40 focus:outline-none border-none text-lg"
         />
         <button
