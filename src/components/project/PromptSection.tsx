@@ -204,21 +204,12 @@ export default function PromptSection({
           </button>
           <button
             onClick={() => {
-              updateProject({ style: 'Batman TAS' });
-              setPrompt('Change the style of these images into Batman: The Animated Series style');
-            }}
-            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
-          >
-            Batman TAS
-          </button>
-          <button
-            onClick={() => {
-              updateProject({ style: 'Sailor Moon' });
-              setPrompt('Change the style of these images into Sailor Moon style');
+              updateProject({ style: 'Tintin' });
+              setPrompt('Change the style of these images into Tintin style');
             }}
             className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-sky-800/90 text-sky-50"
           >
-            Sailor Moon
+            Tintin
           </button>
           <button
             onClick={() => {
@@ -237,6 +228,15 @@ export default function PromptSection({
             className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-stone-800/90 text-stone-50"
           >
             Attack on Titan
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Batman TAS' });
+              setPrompt('Change the style of these images into Batman: The Animated Series style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
+          >
+            Batman TAS
           </button>
         </div>
         <ModelSelector 
