@@ -1,16 +1,18 @@
 import { useDropzone } from 'react-dropzone';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Loader2 } from 'lucide-react';
 import { useState, forwardRef } from 'react';
 import { resizeImage, processZipFile } from '@/utils/imageUpload';
 
 interface ImageDropzoneProps {
   images?: string[];
   onImagesChange: (newImages: string[]) => void;
+  isProcessing?: boolean;
 }
 
-export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDropzone({ images = [], onImagesChange }, ref) {
+export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDropzone({ images = [], onImagesChange, isProcessing = false }, ref) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageUrl(e.target.value);
@@ -20,6 +22,7 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
     e.preventDefault();
     const pastedUrl = e.clipboardData.getData('text');
     setImageUrl(pastedUrl);
+    setIsLoading(true);
     try {
       // Validate URL first
       const urlObj = new URL(pastedUrl);
@@ -51,29 +54,36 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
     } catch (error) {
       console.error('Error processing image URL:', error);
       alert('Failed to process image URL. Please check the console for details.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const onDrop = async (acceptedFiles: File[]) => {
+    setIsLoading(true);
     const newImages = [...images];
     
-    for (const file of acceptedFiles) {
-      if (file.type.startsWith('image/')) {
-        try {
-          const resizedImage = await resizeImage(file);
-          newImages.push(resizedImage);
-        } catch (error) {
-          console.error('Error processing image:', error);
-        }
-      } else if (file.type === 'application/zip') {
-        const processedImages = await processZipFile(file);
-        if (processedImages.length > 0) {
-          newImages.push(...processedImages);
+    try {
+      for (const file of acceptedFiles) {
+        if (file.type.startsWith('image/')) {
+          try {
+            const resizedImage = await resizeImage(file);
+            newImages.push(resizedImage);
+          } catch (error) {
+            console.error('Error processing image:', error);
+          }
+        } else if (file.type === 'application/zip') {
+          const processedImages = await processZipFile(file);
+          if (processedImages.length > 0) {
+            newImages.push(...processedImages);
+          }
         }
       }
+      
+      onImagesChange(newImages);
+    } finally {
+      setIsLoading(false);
     }
-    
-    onImagesChange(newImages);
   };
 
   const removeImage = (index: number) => {
@@ -135,8 +145,14 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
         {...getRootProps()}
         className={`min-h-[12rem] border-2 border-dashed rounded-lg transition-colors cursor-pointer relative ${
           isDragActive ? 'border-white/70 bg-white/5' : 'border-white/60 bg-transparent'
-        }`}
+        } ${isLoading ? 'opacity-50' : ''}`}
       >
+        {isProcessing && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-[2px] z-10">
+            <Loader2 className="h-8 w-8 text-white/90 animate-spin mb-2" />
+            <p className="text-white/90 text-sm font-medium">Processing...</p>
+          </div>
+        )}
         <div className="p-4">
           {(!images || images.length === 0) ? (
             <div className="h-48 flex flex-col items-center justify-center relative">

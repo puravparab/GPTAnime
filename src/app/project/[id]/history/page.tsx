@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import JSZip from 'jszip';
@@ -76,6 +76,14 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const handleDeleteImage = (index: number) => {
+    if (!project?.generatedImages) return;
+    
+    const newImages = [...project.generatedImages];
+    newImages.splice(newImages.length - 1 - index, 1); // Reverse index since we're displaying in reverse order
+    updateProject({ generatedImages: newImages });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-cover bg-center relative flex items-center justify-center" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
@@ -105,14 +113,13 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
         <source src="/assets/video/background.mp4" type="video/mp4" />
       </video>
       <div className="relative z-[1]">
-        <div className="text-center text-white p-4">
+        <div className="text-center text-white p-4 relative z-[10001]">
           <Link href="/" className="inline-block">
             <h1 className="text-7xl font-extrabold mb-4 tracking-tight drop-shadow-xl text-white [text-shadow:_-1px_-1px_0_#fef3c7,_1px_-1px_0_#fef3c7,_-1px_1px_0_#fef3c7,_1px_1px_0_#fef3c7]">
               GPT Anime
             </h1>
           </Link>
         </div>
-
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -159,6 +166,15 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
                   className="w-full h-32 object-cover rounded-lg cursor-pointer"
                   onClick={() => setSelectedImage(image)}
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage(index);
+                  }}
+                  className="absolute top-1 right-1 bg-amber-50/80 text-slate-800 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
               </div>
             ))}
           </div>
