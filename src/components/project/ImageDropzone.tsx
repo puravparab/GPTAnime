@@ -99,7 +99,14 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
 
   return (
     <>
-      <div className="flex justify-end gap-4 mb-4">
+      <div className="flex justify-between items-end mb-4">
+        <div>
+          {images.length > 0 && (
+            <div className="text-white/100 text-xl font-medium">
+              {images.length} {images.length === 1 ? 'Image' : 'Images'} selected
+            </div>
+          )}
+        </div>
         <div className="flex items-center border border-white/40 rounded-full overflow-hidden">
           <div className="flex items-center">
             <input
