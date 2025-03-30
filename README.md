@@ -2,10 +2,7 @@
 
 Your photos reimagined in your favorite anime! Ghiblify your images or bulk create/edit images. This project is still a Work in Progress.
 
-
-
-https://github.com/user-attachments/assets/3ccd6f4f-9b65-4104-b2d7-b5158f729e0e
-
+https://github.com/user-attachments/assets/3f0a1ec0-2555-448b-b73b-9f7db9939466
 
 
 ## Models
