@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, History } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import { resizeImage, processZipFile } from '@/utils/imageUpload';
@@ -141,41 +141,28 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         <source src="/assets/video/background.mp4" type="video/mp4" />
       </video>
       <div className="relative z-[1]">
-        <div className="text-center text-white p-8">
+        <div className="text-center text-white p-4">
           <Link href="/" className="inline-block">
-            <h1 className="text-7xl font-extrabold mb-8 tracking-tight drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-50 to-white">
+            <h1 className="text-7xl font-extrabold mb-4 tracking-tight drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-50 to-white">
               GPT Anime
             </h1>
           </Link>
         </div>
 
         <div className="max-w-7xl mx-auto px-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <input
               type="text"
               value={project.name}
               onChange={(e) => updateProject({ name: e.target.value })}
               className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60"
             />
-            <div className="flex gap-4">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={handleUrlChange}
-                  onPaste={handleUrlPaste}
-                  placeholder="Paste image URL"
-                  className="px-4 py-2 rounded-full bg-white/10 border border-white/40 text-white/90 placeholder-white/80 focus:outline-none focus:ring-2 focus:ring-slate-200/60"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center px-6 py-2 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
-                >
-                  <Upload size={20} className="mr-2" />
-                  Add Images
-                </button>
-              </div>
-            </div>
+            <button
+              className="inline-flex items-center px-6 py-2 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
+            >
+              <History size={20} className="mr-2" />
+              History
+            </button>
           </div>
 
           <PromptSection
@@ -186,6 +173,26 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             images={project.images}
             projectId={project.id}
           />
+
+          <div className="flex justify-end gap-4 mb-4">
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={handleUrlChange}
+                onPaste={handleUrlPaste}
+                placeholder="Paste image URL"
+                className="px-4 py-2 rounded-full bg-white/10 border border-white/40 text-white/90 placeholder-white/80 focus:outline-none focus:ring-2 focus:ring-slate-200/60"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center px-6 py-2 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
+              >
+                <Upload size={20} className="mr-2" />
+                Add Images
+              </button>
+            </div>
+          </div>
 
           <ImageDropzone
             images={project.images}
