@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Trash2 } from 'lucide-react';
 import { Project } from '@/types/project';
+import { StatusIndicator } from '@/components/common/StatusIndicator';
 
 interface ProjectCardProps {
   project: Project;
@@ -14,7 +15,10 @@ export const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
         href={`/project/${project.id}`}
         className="block p-6"
       >
-        <h3 className="text-2xl font-extrabold text-white mb-2">{project.name}</h3>
+        <div className="flex items-center">
+          <h3 className="text-2xl font-extrabold text-white">{project.name}</h3>
+          <StatusIndicator status={project.status} size="sm" />
+        </div>
         <p className="text-sm font-medium text-white/80">
           Created {new Date(project.createdAt).toLocaleString(undefined, { 
             dateStyle: 'short',

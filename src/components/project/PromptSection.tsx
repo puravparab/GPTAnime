@@ -15,6 +15,7 @@ interface PromptSectionProps {
     lastTransformed?: string;
     model?: string;
     generatedImages?: string[];
+    status?: 'completed' | 'processing' | 'error';
   }) => void;
   images: string[];
   projectId: string;
@@ -46,6 +47,8 @@ export default function PromptSection({
     if (!prompt.trim() || images.length === 0) return;
     
     setIsLoading(true);
+    updateProject({ status: 'processing' });
+    
     try {
       const response = await fetch('/api/transform', {
         method: 'POST',
@@ -81,7 +84,8 @@ export default function PromptSection({
             style,
             lastTransformed: new Date().toISOString(),
             model,
-            generatedImages: [...(p.generatedImages || []), ...generatedImages] // Append new images to history
+            generatedImages: [...(p.generatedImages || []), ...generatedImages], // Append new images to history
+            status: 'completed'
           };
         }
         return p;
@@ -99,7 +103,8 @@ export default function PromptSection({
         style,
         lastTransformed: new Date().toISOString(),
         model,
-        generatedImages: [...(projects.find((p: any) => p.id === projectId)?.generatedImages || []), ...generatedImages]
+        generatedImages: [...(projects.find((p: any) => p.id === projectId)?.generatedImages || []), ...generatedImages],
+        status: 'completed'
       });
 
       console.log('Images transformed successfully:', data.results);
@@ -108,6 +113,7 @@ export default function PromptSection({
       router.push(`/project/${projectId}/history`);
     } catch (error) {
       console.error('Error submitting request:', error);
+      updateProject({ status: 'error' });
       alert('Failed to transform images. Please try again.');
     } finally {
       setIsLoading(false);

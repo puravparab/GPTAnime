@@ -5,16 +5,8 @@ import { ArrowLeft, Download } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import JSZip from 'jszip';
-
-interface Project {
-  id: string;
-  name: string;
-  createdAt: Date;
-  images: string[];
-  prompt?: string;
-  style?: string;
-  generatedImages?: string[];
-}
+import { Project } from '@/types/project';
+import { StatusIndicator } from '@/components/common/StatusIndicator';
 
 export default function ProjectHistoryPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -124,12 +116,15 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <input
-                type="text"
-                value={project.name}
-                onChange={(e) => updateProject({ name: e.target.value })}
-                className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60 [text-shadow:_-1px_-1px_0_#fef3c7,_1px_-1px_0_#fef3c7,_-1px_1px_0_#fef3c7,_1px_1px_0_#fef3c7]"
-              />
+              <div className="flex items-center">
+                <StatusIndicator status={project.status} />
+                <input
+                  type="text"
+                  value={project.name}
+                  onChange={(e) => updateProject({ name: e.target.value })}
+                  className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60 [text-shadow:_-1px_-1px_0_#fef3c7,_1px_-1px_0_#fef3c7,_-1px_1px_0_#fef3c7,_1px_1px_0_#fef3c7]"
+                />
+              </div>
               <p className="text-white/80 mt-1 ml-2 text-xl">
                 Total Generated Images: {project.generatedImages?.length || 0}
               </p>
