@@ -13,11 +13,11 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className={`w-48 flex items-center gap-2 px-2 py-1.5 text-sm transition-all duration-200 cursor-pointer bg-emerald-900/30 text-emerald-50 hover:bg-emerald-800/40 backdrop-blur-sm border border-white/10 ${
+        className={`w-48 flex items-center gap-2 px-2 py-1.5 text-sm transition-all duration-200 cursor-pointer bg-emerald-900/30 text-white hover:bg-emerald-800/40 backdrop-blur-sm border border-white/10 ${
           showDropdown ? 'rounded-t-xl' : 'rounded-xl'
         }`}
       >
-        <Sparkles size={14} className="text-emerald-50 shrink-0" />
+        <Sparkles size={14} className="text-white shrink-0" />
         <span className="truncate">{selectedModel}</span>
       </button>
       {showDropdown && (
@@ -29,7 +29,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
                 setShowDropdown(false);
               }}
               className={`w-full px-2 py-2 text-left text-sm hover:bg-emerald-900 transition-colors ${
-                selectedModel === 'Gemini Flash Edit' ? 'text-emerald-200 font-medium' : 'text-emerald-50'
+                selectedModel === 'Gemini Flash Edit' ? 'text-white font-medium' : 'text-white/90'
               }`}
             >
               <span className="truncate block">Gemini Flash Edit</span>
