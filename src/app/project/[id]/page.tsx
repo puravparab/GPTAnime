@@ -15,6 +15,7 @@ interface Project {
   images: string[];
   prompt?: string;
   style?: string;
+  generatedImages?: string[];
 }
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
@@ -111,12 +112,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               onChange={(e) => updateProject({ name: e.target.value })}
               className="text-4xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-200/60 rounded px-2 text-white placeholder-white/60 [text-shadow:_-1px_-1px_0_#fef3c7,_1px_-1px_0_#fef3c7,_-1px_1px_0_#fef3c7,_1px_1px_0_#fef3c7]"
             />
-            <button
+            <Link
+              href={`/project/${project.id}/history`}
               className="inline-flex items-center px-6 py-2 text-base font-bold rounded-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
             >
               <History size={20} className="mr-2" />
               History
-            </button>
+            </Link>
           </div>
 
           <PromptSection

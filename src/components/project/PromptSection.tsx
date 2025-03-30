@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ModelSelector from './ModelSelector';
+import { useRouter } from 'next/navigation';
 
 interface PromptSectionProps {
   prompt: string;
@@ -13,6 +14,7 @@ interface PromptSectionProps {
     prompt?: string;
     lastTransformed?: string;
     model?: string;
+    generatedImages?: string[];
   }) => void;
   images: string[];
   projectId: string;
@@ -28,6 +30,7 @@ export default function PromptSection({
   projectId,
   model = 'Gemini Flash Edit'
 }: PromptSectionProps) {
+  const router = useRouter();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -69,14 +72,16 @@ export default function PromptSection({
       // Find and update the current project
       const updatedProjects = projects.map((p: any) => {
         if (p.id === projectId) {
+          const generatedImages = data.results.map((result: any) => result.outputImage);
           return {
             ...p,
-            images: data.results.map((result: any) => result.outputImage),
+            images: [], // Clear the images array
             originalImages: images, // Store original images for reference
             prompt,
             style,
             lastTransformed: new Date().toISOString(),
-            model
+            model,
+            generatedImages: [...(p.generatedImages || []), ...generatedImages] // Append new images to history
           };
         }
         return p;
@@ -86,16 +91,21 @@ export default function PromptSection({
       localStorage.setItem('projects', JSON.stringify(updatedProjects));
       
       // Update the current project state
+      const generatedImages = data.results.map((result: any) => result.outputImage);
       updateProject({
-        images: data.results.map((result: any) => result.outputImage),
+        images: [], // Clear the images array
         originalImages: images,
         prompt,
         style,
         lastTransformed: new Date().toISOString(),
-        model
+        model,
+        generatedImages: [...(projects.find((p: any) => p.id === projectId)?.generatedImages || []), ...generatedImages]
       });
 
       console.log('Images transformed successfully:', data.results);
+      
+      // Navigate to history page
+      router.push(`/project/${projectId}/history`);
     } catch (error) {
       console.error('Error submitting request:', error);
       alert('Failed to transform images. Please try again.');
