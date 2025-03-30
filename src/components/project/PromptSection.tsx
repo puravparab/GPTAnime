@@ -1,19 +1,42 @@
 import { ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import ModelSelector from './ModelSelector';
+import { useRouter } from 'next/navigation';
 
 interface PromptSectionProps {
   prompt: string;
   setPrompt: (prompt: string) => void;
   style: string | undefined;
-  updateProject: (updates: { style?: string }) => void;
+  updateProject: (updates: { 
+    style?: string;
+    images?: string[];
+    originalImages?: string[];
+    prompt?: string;
+    lastTransformed?: string;
+    model?: string;
+    generatedImages?: string[];
+    status?: 'completed' | 'processing' | 'error';
+  }) => void;
   images: string[];
+  projectId: string;
+  model?: string;
 }
 
-export default function PromptSection({ prompt, setPrompt, style, updateProject, images }: PromptSectionProps) {
+export default function PromptSection({ 
+  prompt, 
+  setPrompt, 
+  style, 
+  updateProject, 
+  images,
+  projectId,
+  model = 'Gemini Flash Edit'
+}: PromptSectionProps) {
+  const router = useRouter();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const placeholders = [
     'Enter your prompt...',
     'Change the style of these images to Studio Ghibli...',
@@ -24,6 +47,8 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject,
     if (!prompt.trim() || images.length === 0) return;
     
     setIsLoading(true);
+    updateProject({ status: 'processing' });
+    
     try {
       const response = await fetch('/api/transform', {
         method: 'POST',
@@ -33,16 +58,89 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject,
         body: JSON.stringify({
           prompt,
           images,
+          model
         }),
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to transform images');
+      }
+
+      // Get existing projects from localStorage
+      const savedProjects = localStorage.getItem('projects');
+      const projects = savedProjects ? JSON.parse(savedProjects) : [];
+      
+      // Find and update the current project
+      const updatedProjects = projects.map((p: any) => {
+        if (p.id === projectId) {
+          const generatedImages = data.results.map((result: any) => result.outputImage);
+          return {
+            ...p,
+            images: [], // Clear the images array
+            originalImages: images, // Store original images for reference
+            prompt,
+            style,
+            lastTransformed: new Date().toISOString(),
+            model,
+            generatedImages: [...(p.generatedImages || []), ...generatedImages], // Append new images to history
+            status: 'completed'
+          };
+        }
+        return p;
+      });
+
+      // Save updated projects back to localStorage
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      
+      // Update the current project state
+      const generatedImages = data.results.map((result: any) => result.outputImage);
+      updateProject({
+        images: [], // Clear the images array
+        originalImages: images,
+        prompt,
+        style,
+        lastTransformed: new Date().toISOString(),
+        model,
+        generatedImages: [...(projects.find((p: any) => p.id === projectId)?.generatedImages || []), ...generatedImages],
+        status: 'completed'
+      });
+
+      console.log('Images transformed successfully:', data.results);
+      
+      // Navigate to history page
+      router.push(`/project/${projectId}/history`);
     } catch (error) {
       console.error('Error submitting request:', error);
+      updateProject({ status: 'error' });
+      alert('Failed to transform images. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleModelSelect = (newModel: string) => {
+    // Get existing projects from localStorage
+    const savedProjects = localStorage.getItem('projects');
+    const projects = savedProjects ? JSON.parse(savedProjects) : [];
+    
+    // Find and update the current project
+    const updatedProjects = projects.map((p: any) => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          model: newModel
+        };
+      }
+      return p;
+    });
+
+    // Save updated projects back to localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
+    // Update the current project state
+    updateProject({ model: newModel });
   };
 
   useEffect(() => {
@@ -92,53 +190,59 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject,
           <ArrowRight size={24} />
         </button>
       </div>
-      <div className="flex flex-wrap items-center gap-3 px-4">
-        <span className="text-white/60 text-sm font-medium">Or try these examples:</span>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Studio Ghibli' });
-            setPrompt('Change the style of these images into Studio Ghibli style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
-        >
-          Studio Ghibli
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Batman TAS' });
-            setPrompt('Change the style of these images into Batman: The Animated Series style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
-        >
-          Batman TAS
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Sailor Moon' });
-            setPrompt('Change the style of these images into Sailor Moon style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-sky-800/90 text-sky-50"
-        >
-          Sailor Moon
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Dragon Ball' });
-            setPrompt('Change the style of these images into Dragon Ball style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
-        >
-          Dragon Ball
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Attack on Titan' });
-            setPrompt('Change the style of these images into Attack on Titan style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-stone-800/90 text-stone-50"
-        >
-          Attack on Titan
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3 px-4">
+          <span className="text-white/60 text-sm font-medium">Or try these examples:</span>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Studio Ghibli' });
+              setPrompt('Change the style of these images into Studio Ghibli style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
+          >
+            Studio Ghibli
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Tintin' });
+              setPrompt('Change the style of these images into Tintin style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-sky-800/90 text-sky-50"
+          >
+            Tintin
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Dragon Ball' });
+              setPrompt('Change the style of these images into Dragon Ball style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
+          >
+            Dragon Ball
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Attack on Titan' });
+              setPrompt('Change the style of these images into Attack on Titan style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-stone-800/90 text-stone-50"
+          >
+            Attack on Titan
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Batman TAS' });
+              setPrompt('Change the style of these images into Batman: The Animated Series style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
+          >
+            Batman TAS
+          </button>
+        </div>
+        <ModelSelector 
+          selectedModel={model} 
+          onModelSelect={handleModelSelect} 
+        />
       </div>
     </div>
   );
