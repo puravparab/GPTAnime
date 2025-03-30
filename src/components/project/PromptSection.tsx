@@ -5,11 +5,25 @@ interface PromptSectionProps {
   prompt: string;
   setPrompt: (prompt: string) => void;
   style: string | undefined;
-  updateProject: (updates: { style?: string }) => void;
+  updateProject: (updates: { 
+    style?: string;
+    images?: string[];
+    originalImages?: string[];
+    prompt?: string;
+    lastTransformed?: string;
+  }) => void;
   images: string[];
+  projectId: string;
 }
 
-export default function PromptSection({ prompt, setPrompt, style, updateProject, images }: PromptSectionProps) {
+export default function PromptSection({ 
+  prompt, 
+  setPrompt, 
+  style, 
+  updateProject, 
+  images,
+  projectId 
+}: PromptSectionProps) {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -37,9 +51,46 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject,
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to transform images');
+      }
+
+      // Get existing projects from localStorage
+      const savedProjects = localStorage.getItem('projects');
+      const projects = savedProjects ? JSON.parse(savedProjects) : [];
+      
+      // Find and update the current project
+      const updatedProjects = projects.map((p: any) => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            images: data.results.map((result: any) => result.outputImage),
+            originalImages: images, // Store original images for reference
+            prompt,
+            style,
+            lastTransformed: new Date().toISOString()
+          };
+        }
+        return p;
+      });
+
+      // Save updated projects back to localStorage
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      
+      // Update the current project state
+      updateProject({
+        images: data.results.map((result: any) => result.outputImage),
+        originalImages: images,
+        prompt,
+        style,
+        lastTransformed: new Date().toISOString()
+      });
+
+      console.log('Images transformed successfully:', data.results);
     } catch (error) {
       console.error('Error submitting request:', error);
+      alert('Failed to transform images. Please try again.');
     } finally {
       setIsLoading(false);
     }

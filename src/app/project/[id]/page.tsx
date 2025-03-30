@@ -184,6 +184,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             style={project.style}
             updateProject={updateProject}
             images={project.images}
+            projectId={project.id}
           />
 
           <ImageDropzone

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fal-ai/client": "^1.3.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.485.0",
     "next": "15.2.4",
