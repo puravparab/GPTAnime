@@ -1,13 +1,63 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { BackgroundVideo } from '@/components/home/BackgroundVideo';
+import { Header } from '@/components/home/Header';
+import { ProjectCard } from '@/components/home/ProjectCard';
+import { useProjects } from '@/hooks/useProjects';
+
 export default function Home() {
+  const router = useRouter();
+  const { projects, isLoading, createNewProject, deleteProject } = useProjects();
+
+  const handleCreateProject = () => {
+    const newProject = createNewProject();
+    router.push(`/project/${newProject.id}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+        <BackgroundVideo />
+        <Header />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
-      <div className="text-center text-white p-8 relative z-10">
-        <h1 className="text-7xl font-extrabold mb-8 tracking-tight drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
-          GPT Anime
-        </h1>
-        <p className="text-3xl font-light tracking-wide drop-shadow-lg max-w-3xl mx-auto leading-relaxed bg-clip-text text-transparent bg-gradient-to-r from-gray-100 to-gray-300">
-          Your photos reimagined in your favorite anime
-        </p>
+    <div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: 'url("/assets/images/background.png")' }}>
+      <BackgroundVideo />
+      <Header />
+      <div className="relative z-10 w-full max-w-4xl px-8 mx-auto pb-16">
+        {projects.length === 0 ? (
+          <div className="text-center">
+            <button
+              onClick={handleCreateProject}
+              className="inline-flex items-center px-8 py-4 text-2xl font-extrabold rounded-full text-sky-800 bg-white/50 hover:bg-white/70 border border-white/60 transition-all duration-200 ease-in-out cursor-pointer"
+            >
+              New Project
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <button
+              onClick={handleCreateProject}
+              className="flex flex-col items-center justify-center border-2 border-dashed border-white/60 rounded-lg bg-transparent hover:bg-white/5 transition-all duration-200 cursor-pointer p-6"
+            >
+              <span className="text-4xl text-white/80 mb-2">+</span>
+              <span className="text-base font-medium text-white/80">New Project</span>
+            </button>
+            {projects
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onDelete={deleteProject}
+                />
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );
