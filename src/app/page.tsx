@@ -33,7 +33,7 @@ export default function Home() {
           <div className="text-center">
             <button
               onClick={handleCreateProject}
-              className="inline-flex items-center px-8 py-4 text-2xl font-extrabold rounded-full text-sky-800 bg-white/50 hover:bg-white/70 border border-white/60 transition-all duration-200 ease-in-out cursor-pointer"
+              className="inline-flex items-center px-8 py-4 text-2xl font-extrabold rounded-full text-white bg-blue-950/50 hover:bg-blue-950/60 backdrop-blur-sm border border-blue-900/50 transition-all duration-200 ease-in-out cursor-pointer"
             >
               New Project
             </button>

@@ -105,14 +105,13 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
         <source src="/assets/video/background.mp4" type="video/mp4" />
       </video>
       <div className="relative z-[1]">
-        <div className="text-center text-white p-4">
+        <div className="text-center text-white p-4 relative z-[10001]">
           <Link href="/" className="inline-block">
             <h1 className="text-7xl font-extrabold mb-4 tracking-tight drop-shadow-xl text-white [text-shadow:_-1px_-1px_0_#fef3c7,_1px_-1px_0_#fef3c7,_-1px_1px_0_#fef3c7,_1px_1px_0_#fef3c7]">
               GPT Anime
             </h1>
           </Link>
         </div>
-
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex items-start justify-between mb-4">
             <div>
