@@ -5,7 +5,7 @@ export async function POST(
   request: Request
 ) {
   try {
-    const { prompt, images } = await request.json();
+    const { prompt, images, model } = await request.json();
 
     if (!prompt || !images || !Array.isArray(images) || images.length === 0) {
       return NextResponse.json(
@@ -14,7 +14,18 @@ export async function POST(
       );
     }
 
-    const results = await GeminiFlashEdit(prompt, images);
+    let results;
+    
+    // Use different services based on the model
+    switch (model) {
+      case 'Gemini Flash Edit':
+        results = await GeminiFlashEdit(prompt, images);
+        break;
+      // Add other model cases here
+      default:
+        // Default to Gemini for now
+        results = await GeminiFlashEdit(prompt, images);
+    }
 
     return NextResponse.json({ results });
   } catch (error) {

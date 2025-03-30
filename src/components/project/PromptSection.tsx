@@ -52,6 +52,7 @@ export default function PromptSection({
         body: JSON.stringify({
           prompt,
           images,
+          model
         }),
       });
 
