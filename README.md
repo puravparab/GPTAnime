@@ -2,9 +2,11 @@
 
 Your photos reimagined in your favorite anime! Ghiblify your images or bulk create/edit images. This project is still a Work in Progress.
 
-<img width="1506" alt="Screenshot 2025-03-29 at 7 30 37 PM" 
-src="https://github.com/user-attachments/assets/
-ee8129f4-30e7-4af3-8b7f-1788d026d0d4" />
+
+
+https://github.com/user-attachments/assets/3ccd6f4f-9b65-4104-b2d7-b5158f729e0e
+
+
 
 ## Models
 
