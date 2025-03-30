@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import ModelSelector from './ModelSelector';
 
 interface PromptSectionProps {
   prompt: string;
@@ -11,9 +12,11 @@ interface PromptSectionProps {
     originalImages?: string[];
     prompt?: string;
     lastTransformed?: string;
+    model?: string;
   }) => void;
   images: string[];
   projectId: string;
+  model?: string;
 }
 
 export default function PromptSection({ 
@@ -22,12 +25,14 @@ export default function PromptSection({
   style, 
   updateProject, 
   images,
-  projectId 
+  projectId,
+  model = 'Gemini Flash Edit'
 }: PromptSectionProps) {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const placeholders = [
     'Enter your prompt...',
     'Change the style of these images to Studio Ghibli...',
@@ -69,7 +74,8 @@ export default function PromptSection({
             originalImages: images, // Store original images for reference
             prompt,
             style,
-            lastTransformed: new Date().toISOString()
+            lastTransformed: new Date().toISOString(),
+            model
           };
         }
         return p;
@@ -84,7 +90,8 @@ export default function PromptSection({
         originalImages: images,
         prompt,
         style,
-        lastTransformed: new Date().toISOString()
+        lastTransformed: new Date().toISOString(),
+        model
       });
 
       console.log('Images transformed successfully:', data.results);
@@ -94,6 +101,29 @@ export default function PromptSection({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleModelSelect = (newModel: string) => {
+    // Get existing projects from localStorage
+    const savedProjects = localStorage.getItem('projects');
+    const projects = savedProjects ? JSON.parse(savedProjects) : [];
+    
+    // Find and update the current project
+    const updatedProjects = projects.map((p: any) => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          model: newModel
+        };
+      }
+      return p;
+    });
+
+    // Save updated projects back to localStorage
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    
+    // Update the current project state
+    updateProject({ model: newModel });
   };
 
   useEffect(() => {
@@ -143,53 +173,59 @@ export default function PromptSection({
           <ArrowRight size={24} />
         </button>
       </div>
-      <div className="flex flex-wrap items-center gap-3 px-4">
-        <span className="text-white/60 text-sm font-medium">Or try these examples:</span>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Studio Ghibli' });
-            setPrompt('Change the style of these images into Studio Ghibli style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
-        >
-          Studio Ghibli
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Batman TAS' });
-            setPrompt('Change the style of these images into Batman: The Animated Series style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
-        >
-          Batman TAS
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Sailor Moon' });
-            setPrompt('Change the style of these images into Sailor Moon style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-sky-800/90 text-sky-50"
-        >
-          Sailor Moon
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Dragon Ball' });
-            setPrompt('Change the style of these images into Dragon Ball style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
-        >
-          Dragon Ball
-        </button>
-        <button
-          onClick={() => {
-            updateProject({ style: 'Attack on Titan' });
-            setPrompt('Change the style of these images into Attack on Titan style');
-          }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-stone-800/90 text-stone-50"
-        >
-          Attack on Titan
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3 px-4">
+          <span className="text-white/60 text-sm font-medium">Or try these examples:</span>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Studio Ghibli' });
+              setPrompt('Change the style of these images into Studio Ghibli style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
+          >
+            Studio Ghibli
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Batman TAS' });
+              setPrompt('Change the style of these images into Batman: The Animated Series style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-slate-800/90 text-slate-50"
+          >
+            Batman TAS
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Sailor Moon' });
+              setPrompt('Change the style of these images into Sailor Moon style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-sky-800/90 text-sky-50"
+          >
+            Sailor Moon
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Dragon Ball' });
+              setPrompt('Change the style of these images into Dragon Ball style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
+          >
+            Dragon Ball
+          </button>
+          <button
+            onClick={() => {
+              updateProject({ style: 'Attack on Titan' });
+              setPrompt('Change the style of these images into Attack on Titan style');
+            }}
+            className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-stone-800/90 text-stone-50"
+          >
+            Attack on Titan
+          </button>
+        </div>
+        <ModelSelector 
+          selectedModel={model} 
+          onModelSelect={handleModelSelect} 
+        />
       </div>
     </div>
   );
