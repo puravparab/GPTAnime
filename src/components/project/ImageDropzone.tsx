@@ -40,7 +40,7 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
     onImagesChange(newImages);
   };
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'image/png': ['.png'],
@@ -59,16 +59,26 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
     <>
       <div
         {...getRootProps()}
-        className={`min-h-[12rem] border-2 border-dashed rounded-lg transition-colors ${
+        className={`min-h-[12rem] border-2 border-dashed rounded-lg transition-colors cursor-pointer relative ${
           isDragActive ? 'border-white/70 bg-white/5' : 'border-white/60 bg-transparent'
         }`}
       >
         <div className="p-4">
           {(!images || images.length === 0) ? (
-            <div className="h-48 flex flex-col items-center justify-center">
+            <div className="h-48 flex flex-col items-center justify-center relative">
+              <input
+                type="file"
+                accept="image/*,.zip"
+                multiple
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  onDrop(files);
+                }}
+              />
               <Upload className="h-8 w-8 text-white/80" />
               <p className="mt-2 text-base font-medium text-white/80">
-                Drop images or .zip folder here
+                Click or drop images or .zip folder here
               </p>
             </div>
           ) : (
@@ -79,7 +89,10 @@ export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDr
                     src={image}
                     alt={`Uploaded ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                    onClick={() => setSelectedImage(image)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(image);
+                    }}
                   />
                   <button
                     onClick={(e) => {
