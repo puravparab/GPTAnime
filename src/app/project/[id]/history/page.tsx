@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import JSZip from 'jszip';
@@ -74,6 +74,14 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  const handleDeleteImage = (index: number) => {
+    if (!project?.generatedImages) return;
+    
+    const newImages = [...project.generatedImages];
+    newImages.splice(newImages.length - 1 - index, 1); // Reverse index since we're displaying in reverse order
+    updateProject({ generatedImages: newImages });
   };
 
   if (isLoading) {
@@ -158,6 +166,15 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
                   className="w-full h-32 object-cover rounded-lg cursor-pointer"
                   onClick={() => setSelectedImage(image)}
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage(index);
+                  }}
+                  className="absolute top-1 right-1 bg-amber-50/80 text-slate-800 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
               </div>
             ))}
           </div>
