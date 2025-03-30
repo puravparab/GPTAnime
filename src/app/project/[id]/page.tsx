@@ -232,7 +232,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     onChange={handleUrlChange}
                     onPaste={handleUrlPaste}
                     placeholder="Paste image URL"
-                    className="px-4 py-2 rounded-full bg-white/30 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-200/60"
+                    className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 placeholder-white/80 focus:outline-none focus:ring-2 focus:ring-slate-200/60"
                   />
                 </div>
                 <button

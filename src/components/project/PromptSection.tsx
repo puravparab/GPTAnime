@@ -68,7 +68,7 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject 
             updateProject({ style: 'Studio Ghibli' });
             setPrompt('Change the style of these images into Studio Ghibli style');
           }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
+          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
         >
           Studio Ghibli
         </button>
@@ -95,7 +95,7 @@ export default function PromptSection({ prompt, setPrompt, style, updateProject 
             updateProject({ style: 'Dragon Ball' });
             setPrompt('Change the style of these images into Dragon Ball style');
           }}
-          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-emerald-800/90 text-emerald-50"
+          className="px-4 py-1.5 rounded-md text-sm transition-all duration-200 cursor-pointer bg-amber-800/90 text-amber-50"
         >
           Dragon Ball
         </button>
