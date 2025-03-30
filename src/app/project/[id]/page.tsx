@@ -128,6 +128,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             images={project.images}
             onImagesChange={(newImages) => updateProject({ images: newImages })}
             ref={fileInputRef}
+            isProcessing={project.status === 'processing'}
           />
         </div>
       </div>
