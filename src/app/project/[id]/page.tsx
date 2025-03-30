@@ -21,7 +21,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const resolvedParams = use(params);
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState('');
   const [prompt, setPrompt] = useState('');
   const directoryInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -65,51 +64,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       p.id === resolvedParams.id ? updatedProject : p
     );
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
-  };
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    setImageUrl(url);
-  };
-
-  const handleUrlPaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedUrl = e.clipboardData.getData('text');
-    setImageUrl(pastedUrl);
-    
-    try {
-      // Validate URL first
-      const urlObj = new URL(pastedUrl);
-      if (!urlObj.protocol.startsWith('http')) {
-        throw new Error('Not a valid HTTP URL');
-      }
-
-      console.log('Fetching image from URL:', pastedUrl);
-      const response = await fetch(pastedUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-      }
-      
-      const blob = await response.blob();
-      console.log('Fetched blob type:', blob.type);
-      
-      // Verify it's an image
-      if (!blob.type.startsWith('image/')) {
-        throw new Error('Not a valid image file');
-      }
-      
-      const file = new File([blob], 'image.jpg', { type: blob.type });
-      console.log('Processing image file:', file.name, file.type);
-      
-      const resizedImage = await resizeImage(file);
-      if (!project) return;
-      const newImages = [...(project.images || []), resizedImage];
-      updateProject({ images: newImages });
-      setImageUrl('');
-    } catch (error) {
-      console.error('Error processing image URL:', error);
-      alert('Failed to process image URL. Please check the console for details.');
-    }
   };
 
   if (isLoading) {
@@ -173,28 +127,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             images={project.images}
             projectId={project.id}
           />
-
-          <div className="flex justify-end gap-4 mb-4">
-            <div className="flex items-center border border-white/40 rounded-full overflow-hidden">
-              <div className="flex items-center">
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={handleUrlChange}
-                  onPaste={handleUrlPaste}
-                  placeholder="Paste image URL"
-                  className="px-4 py-2 rounded-l-full bg-white/10 border-none focus:outline-none focus:ring-2 focus:ring-slate-200/60 text-white/90 placeholder-white/80 w-64"
-                />
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center px-3 py-2 text-base font-bold rounded-r-full text-slate-900 bg-amber-50/80 hover:bg-amber-100/80 border border-amber-200/60 transition-all duration-200 ease-in-out cursor-pointer"
-              >
-                <Upload size={20} className="mr-2" />
-                Add Images
-              </button>
-            </div>
-          </div>
 
           <ImageDropzone
             images={project.images}
