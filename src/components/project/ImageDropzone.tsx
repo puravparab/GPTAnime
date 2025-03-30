@@ -4,11 +4,11 @@ import { useState, forwardRef } from 'react';
 import { resizeImage, processZipFile } from '@/utils/imageUpload';
 
 interface ImageDropzoneProps {
-  images: string[];
+  images?: string[];
   onImagesChange: (newImages: string[]) => void;
 }
 
-export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDropzone({ images, onImagesChange }, ref) {
+export default forwardRef<HTMLInputElement, ImageDropzoneProps>(function ImageDropzone({ images = [], onImagesChange }, ref) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
 

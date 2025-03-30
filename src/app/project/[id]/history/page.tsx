@@ -71,7 +71,7 @@ export default function ProjectHistoryPage({ params }: { params: Promise<{ id: s
       const url = window.URL.createObjectURL(content);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${project.name}_generated_images.zip`;
+      link.download = `GPTAnime_${project.name}_images.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
