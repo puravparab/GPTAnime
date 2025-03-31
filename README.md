@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/3f0a1ec0-2555-448b-b73b-9f7db9939466
 
 3. Create a `.env.local` file in the `src` directory with your FAL API key:
 	```text
-	FAL_API_KEY=your_api_key_here
+	FAL_KEY=your_api_key_here
 	```
 
 4. The application will now be able to use FAL's services for image processing and generation
